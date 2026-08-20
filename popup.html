@@ -99,6 +99,16 @@
     <input type="date" id="end-date">
   </div>
 
+  <div class="form-group">
+    <label for="timezone">Timezone (pentru extragere)</label>
+    <select id="timezone" style="width: 100%; padding: 8px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px;">
+      <option value="local" selected>Timpul Meu Local (Default)</option>
+      <option value="0">UTC (Timpul Universal)</option>
+      <option value="-8">UTC-8 (Pacific Time / GG Standard)</option>
+      <option value="+3">UTC+3 (EEST)</option>
+    </select>
+  </div>
+
   <div class="checkbox-group">
     <label>
       <input type="checkbox" id="chk-summary" checked> Game Summaries

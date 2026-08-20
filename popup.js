@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("end-date").valueAsDate = today;
   
   function checkIvStatus() {
-      chrome.storage.local.get("capturedIv", (res) => {
+      chrome.storage.local.get(["capturedIv", "debugDownloadBody"], (res) => {
           const statusEl = document.getElementById("iv-status");
           if (res.capturedIv && res.capturedIv.length >= 16) {
               statusEl.style.color = "#4CAF50";
@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
               statusEl.style.color = "#f44336";
               statusEl.innerText = "IV Status: Not Captured (Refresh Pokercraft page or Login again)";
+          }
+          
+          if (res.debugDownloadBody) {
+              document.getElementById("log").innerText += "\nDebug Payload: " + res.debugDownloadBody;
           }
       });
   }
@@ -30,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const endDate = document.getElementById("end-date").value;
     const doSummary = document.getElementById("chk-summary").checked;
     const doHistory = document.getElementById("chk-history").checked;
+    const timezone = document.getElementById("timezone").value;
 
     if (!startDate || !endDate) {
       alert("Please select both start and end dates.");
@@ -41,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     chrome.runtime.sendMessage({
       type: "START_BATCH_DOWNLOAD",
-      payload: { startDate, endDate, doSummary, doHistory }
+      payload: { startDate, endDate, timezone, doSummary, doHistory }
     });
   });
 });

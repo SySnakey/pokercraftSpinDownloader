@@ -13,9 +13,29 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
     if (authHeader) {
       chrome.storage.local.set({ authorization: authHeader, baseUrl: new URL(details.url).origin });
     }
+    
+    // Debug: capture all headers when downloading
+    if (details.url.includes('/api/download/')) {
+        let headersStr = details.requestHeaders.map(h => `${h.name}: ${h.value}`).join(', ');
+        chrome.storage.local.set({ debugHeaders: headersStr });
+    }
   },
   { urls: POKERCRAFT_URLS },
   ["requestHeaders", "extraHeaders"]
+);
+
+chrome.webRequest.onBeforeRequest.addListener(
+  (details) => {
+    if (details.method === "POST" && details.url.includes('/api/download/')) {
+      if (details.requestBody && details.requestBody.raw && details.requestBody.raw[0]) {
+        const decoder = new TextDecoder("utf-8");
+        const bodyStr = decoder.decode(details.requestBody.raw[0].bytes);
+        chrome.storage.local.set({ debugDownloadBody: bodyStr });
+      }
+    }
+  },
+  { urls: POKERCRAFT_URLS },
+  ["requestBody"]
 );
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -88,7 +108,7 @@ async function fetchWithDpop(url, method, body, authorization, capturedIv) {
   };
   if (body) headers["Content-Type"] = "application/json";
 
-  const options = { method, headers };
+  const options = { method, headers, credentials: "include" };
   if (body) options.body = JSON.stringify(body);
 
   const res = await fetch(url, options);
@@ -148,37 +168,62 @@ async function downloadZipWithDpop(url, authorization) {
     "Accept": "application/json, text/plain, */*"
   };
   
-  const res = await fetch(url, { method: 'GET', headers });
+  const res = await fetch(url, { method: 'GET', headers, credentials: "include" });
   if (!res.ok) throw new Error(`HTTP Error ${res.status} on ${url}`);
   
   const blob = await res.blob();
   return blob;
 }
 
-async function startBatchDownload({ startDate, endDate, doSummary, doHistory }) {
+async function startBatchDownload({ startDate, endDate, timezone, doSummary, doHistory }) {
   const { authorization, capturedIv, baseUrl } = await chrome.storage.local.get([
     "authorization", "capturedIv", "baseUrl"
   ]);
   
   if (!authorization || !baseUrl) throw new Error("Missing Authorization token. Please open the Pokercraft tab.");
 
-  // GG Poker operates on UTC-8 (Pacific Time).
-  // A GG Poker day starts at 00:00 UTC-8, which is 08:00 UTC.
   const SEARCH_ENDPOINT = `${baseUrl}/api/session/list/SpinAndGold`;
-  let start = new Date(startDate + "T08:00:00Z"); 
   
-  // The end day should cover up to 23:59:59 UTC-8, which is 07:59:59 UTC the next day.
-  let end = new Date(endDate + "T08:00:00Z");
-  end.setDate(end.getDate() + 1);
-  end.setMilliseconds(end.getMilliseconds() - 1); // 07:59:59.999 UTC
+  let fromEpoch, toEpoch;
+  
+  if (timezone === 'local' || !timezone) {
+      // Local time: construct Date in local timezone directly
+      const [sy, sm, sd] = startDate.split('-');
+      const start = new Date(sy, sm - 1, sd, 0, 0, 0, 0);
+      fromEpoch = start.getTime();
+      
+      const [ey, em, ed] = endDate.split('-');
+      const end = new Date(ey, em - 1, ed, 23, 59, 59, 999);
+      toEpoch = end.getTime();
+  } else {
+      // Specific UTC offset
+      const offset = parseInt(timezone); 
+      
+      const [sy, sm, sd] = startDate.split('-');
+      const startUtcEpoch = Date.UTC(sy, sm - 1, sd, 0, 0, 0, 0);
+      fromEpoch = startUtcEpoch - (offset * 3600 * 1000);
+      
+      const [ey, em, ed] = endDate.split('-');
+      const endUtcEpoch = Date.UTC(ey, em - 1, ed, 23, 59, 59, 999);
+      toEpoch = endUtcEpoch - (offset * 3600 * 1000);
+  }
+  
+  let offsetMinutes = 0;
+  if (timezone === 'local' || !timezone) {
+      offsetMinutes = -(new Date().getTimezoneOffset());
+  } else {
+      offsetMinutes = parseInt(timezone) * 60;
+  }
+  const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+  const absMinutes = Math.abs(offsetMinutes);
+  const offsetHoursStr = Math.floor(absMinutes / 60).toString().padStart(2, '0');
+  const offsetMinsStr = (absMinutes % 60).toString().padStart(2, '0');
+  const offsetId = `${offsetSign}${offsetHoursStr}:${offsetMinsStr}`;
   
   const startStr = startDate;
   const endStr = endDate;
   
-  chrome.runtime.sendMessage({ type: "BATCH_PROGRESS", payload: { message: `Fetching games for GG Poker Time: ${startStr} to ${endStr}...` } });
-  
-  const fromEpoch = start.getTime();
-  const toEpoch = end.getTime();
+  chrome.runtime.sendMessage({ type: "BATCH_PROGRESS", payload: { message: `Fetching games for dates: ${startStr} to ${endStr} (Timezone: ${timezone})...` } });
   const searchUrl = `${SEARCH_ENDPOINT}?from=${fromEpoch}&to=${toEpoch}&currency=USD&vipRoomCondition=NONE_VIP&isSpinAndGoldWinsOnly=false`;
   let games = [];
   
@@ -249,7 +294,7 @@ async function startBatchDownload({ startDate, endDate, doSummary, doHistory }) 
          const chunk = chunks[i];
          chrome.runtime.sendMessage({ type: "BATCH_PROGRESS", payload: { message: `[${type}] Requesting batch ${i+1}/${chunks.length}...` } });
 
-         const genBody = type === 'summary' ? { tourneyIdList: chunk } : { sessionlist: chunk }; 
+         const genBody = type === 'summary' ? { tourneyIdList: chunk, offsetId } : { sessionlist: chunk, offsetId }; 
          
          let genRes;
          try {
