@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("end-date").valueAsDate = today;
   
   function checkIvStatus() {
-      chrome.storage.local.get(["capturedIv", "debugDownloadBody"], (res) => {
+      chrome.storage.local.get("capturedIv", (res) => {
           const statusEl = document.getElementById("iv-status");
           if (res.capturedIv && res.capturedIv.length >= 16) {
               statusEl.style.color = "#4CAF50";
@@ -16,10 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
               statusEl.style.color = "#f44336";
               statusEl.innerText = "IV Status: Not Captured (Refresh Pokercraft page or Login again)";
-          }
-          
-          if (res.debugDownloadBody) {
-              document.getElementById("log").innerText += "\nDebug Payload: " + res.debugDownloadBody;
           }
       });
   }

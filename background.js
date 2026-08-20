@@ -24,20 +24,6 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   ["requestHeaders", "extraHeaders"]
 );
 
-chrome.webRequest.onBeforeRequest.addListener(
-  (details) => {
-    if (details.method === "POST" && details.url.includes('/api/download/')) {
-      if (details.requestBody && details.requestBody.raw && details.requestBody.raw[0]) {
-        const decoder = new TextDecoder("utf-8");
-        const bodyStr = decoder.decode(details.requestBody.raw[0].bytes);
-        chrome.storage.local.set({ debugDownloadBody: bodyStr });
-      }
-    }
-  },
-  { urls: POKERCRAFT_URLS },
-  ["requestBody"]
-);
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "IV_CAPTURED") {
     chrome.storage.local.set({ capturedIv: message.payload.value });
@@ -63,9 +49,9 @@ function requestDpopProof(method, url) {
           if (result.activeTabId) {
               const activeTab = tabs.find(t => t.id === result.activeTabId);
               if (activeTab) {
-                  targetTabs = [activeTab]; // Prioritize the tab that sent IV
+                  targetTabs = [activeTab, ...tabs.filter(t => t.id !== activeTab.id)]; // Try active tab first, then others
               } else {
-                  // If not found in query, try it anyway
+                  // If not found in query, try it anyway, then others
                   targetTabs = [{ id: result.activeTabId }, ...tabs];
               }
           }
