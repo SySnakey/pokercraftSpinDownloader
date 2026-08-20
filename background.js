@@ -338,7 +338,7 @@ async function startBatchDownload({ startDate, endDate, timezone, doSummary, doH
                  reader.onload = function() {
                      chrome.downloads.download({ 
                          url: reader.result, 
-                         filename: `Pokercraft_${type}_batch_${i+1}.zip` 
+                         filename: `Pokercraft_${type}_batch_${i+1}of${chunks.length}.zip` 
                      });
                  };
                  reader.readAsDataURL(blob);
