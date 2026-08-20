@@ -4,8 +4,10 @@
   "version": "1.0",
   "description": "Automate batch downloading of Pokercraft Spin & Gold hand histories and game summaries.",
   "action": {
-    "default_popup": "popup.html",
     "default_title": "Pokercraft Bulk Downloader"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
   },
   "background": {
     "service_worker": "background.js"
@@ -32,7 +34,8 @@
   "permissions": [
     "storage",
     "downloads",
-    "webRequest"
+    "webRequest",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://my.pokercraft.com/*",

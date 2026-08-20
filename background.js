@@ -3,6 +3,10 @@ const POKERCRAFT_URLS = [
   "https://wsop-my.pokercraft.com/*"
 ];
 
+if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(console.error);
+}
+
 function getHeader(headers, name) {
   return headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value;
 }
