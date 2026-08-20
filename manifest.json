@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Pokercraft Bulk Downloader",
+  "version": "1.0",
+  "description": "Automate batch downloading of Pokercraft Spin & Gold hand histories and game summaries.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Pokercraft Bulk Downloader"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://wsop-my.pokercraft.com/*",
+        "https://my.pokercraft.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["hook.js"],
+      "matches": [
+        "https://my.pokercraft.com/*",
+        "https://wsop-my.pokercraft.com/*"
+      ]
+    }
+  ],
+  "permissions": [
+    "storage",
+    "downloads",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://my.pokercraft.com/*",
+    "https://wsop-my.pokercraft.com/*"
+  ]
+}

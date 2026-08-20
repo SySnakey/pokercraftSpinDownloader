@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pokercraft Bulk Downloader</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      width: 300px;
+      padding: 15px;
+      background-color: #1a1a1a;
+      color: #e0e0e0;
+      margin: 0;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 16px;
+      color: #ffffff;
+      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      background: #333;
+      border: 1px solid #555;
+      color: #fff;
+      border-radius: 4px;
+      box-sizing: border-box;
+      color-scheme: dark;
+    }
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #d32f2f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover:not(:disabled) {
+      background: #b71c1c;
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      color: #888;
+    }
+    #log {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #aaa;
+      background: #222;
+      padding: 10px;
+      border-radius: 4px;
+      min-height: 40px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .step {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Pokercraft Downloader</h2>
+
+  <div class="form-group">
+    <label for="start-date">Start Date</label>
+    <input type="date" id="start-date">
+  </div>
+  <div class="form-group">
+    <label for="end-date">End Date</label>
+    <input type="date" id="end-date">
+  </div>
+
+  <div class="checkbox-group">
+    <label>
+      <input type="checkbox" id="chk-summary" checked> Game Summaries
+    </label>
+    <label>
+      <input type="checkbox" id="chk-history" checked> Game Histories
+    </label>
+  </div>
+
+  <button id="btn-start">Start Batch Download</button>
+
+  <div id="log">Ready.</div>
+  <div id="iv-status" style="margin-top: 10px; font-size: 11px; color: #f44336;">IV Status: Not Captured (Refresh Pokercraft page)</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

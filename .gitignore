@@ -1,0 +1,13 @@
+Krakatau/
+src_out/
+temp/
+procyon.jar
+*.java
+*.py
+*.js
+!background.js
+!content.js
+!hook.js
+!popup.js
+!api_script.js
+!test.js
