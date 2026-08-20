@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Pokercraft Bulk Downloader",
+  "name": "Pokercraft Spins Downloader",
   "version": "1.0",
   "description": "Automate batch downloading of Pokercraft Spin & Gold hand histories and game summaries.",
   "action": {
-    "default_title": "Pokercraft Bulk Downloader"
+    "default_title": "Pokercraft Spins Downloader"
   },
   "side_panel": {
     "default_path": "popup.html"
