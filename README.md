@@ -20,8 +20,8 @@ Because this is a specialized developer tool, it is not available on the Chrome 
    - Extract the downloaded ZIP file into a permanent folder on your PC (e.g., `Documents\Pokercraft-Extension`).
 
 2. **Load into Browser (Chrome, Brave, or Edge):**
-   - Open your browser and go to the extensions page (type `chrome://extensions/` in the address bar).
-   - In the top right corner, turn on **"Developer mode"**.
+   - Open your browser and go to the extensions page (type `chrome://extensions/` in the address bar or e`edge://extensions`).
+   - In the top right corner in Chrome (or bottom left in Edge), turn on **"Developer mode"**.
    - Click the **"Load unpacked"** button (top left).
    - Select the folder where you extracted the ZIP (the folder that contains the `manifest.json` file).
    
@@ -29,10 +29,10 @@ Because this is a specialized developer tool, it is not available on the Chrome 
 
 ## How to Use
 
-1. Go to [Pokercraft](https://my.pokercraft.com/) (either via your browser directly or via the GG Poker client).
+1. Go to [Pokercraft](https://my.pokercraft.com/) (via the GG Poker client).
 2. Wait for the page to fully load and log you in.
 3. Click the **Pokercraft Spins Downloader** icon in your browser's toolbar. The Side Panel will open.
-4. Check the bottom of the panel. It must say `<span style="color: green">IV Status: Captured OK</span>`. 
+4. Check the bottom of the panel. It must say $\color{green}{\text{IV Status: Captured OK}}$ 
    - *Note: If it says "Not Captured", just press `F5` to refresh the Pokercraft page while the side panel is open.*
 5. Select your desired **Start Date** and **End Date**.
 6. Select your preferred **Timezone** (By default, it will automatically use your PC's local time, perfectly formatting the hands for your location).
