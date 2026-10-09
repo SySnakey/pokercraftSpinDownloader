@@ -89,7 +89,7 @@ function requestDpopProof(method, url) {
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-async function fetchWithDpop(url, method, body, authorization, capturedIv) {
+async function fetchWithDpop(url, method, body, authorization) {
   const dpop = await requestDpopProof(method, url);
   const headers = {
     "Authorization": authorization,
@@ -122,11 +122,10 @@ async function fetchWithDpop(url, method, body, authorization, capturedIv) {
              debugKeyLen = keyBytes.length;
              const cryptoKey = await crypto.subtle.importKey("raw", keyBytes, { name: "AES-CBC" }, false, ["decrypt"]);
              
-             // 2. Prepare the IV (fallback or captured)
-             let ivString = "tE5_yR0~uI2-oP4aL6kS8jD1fG3hH9z1"; // Fallback IV
-             if (capturedIv && capturedIv.length >= 16) {
-                 ivString = capturedIv;
-             }
+             // PokerCraft embeds a static AES-CBC IV in the page bundle (class field `iv`).
+             // Only the first 16 characters are used. A captured `.iv` from the page is often a
+             // different value and decrypts to garbage that is not JSON.
+             let ivString = "tE2_uI8~oP0-aL5kS9jD3fG1hH6zX4wK";
              debugIv = ivString.substring(0, 16);
              // Java backend truncates the string to 16 bytes, then gets UTF-8 bytes
              const ivBytes = new TextEncoder().encode(ivString.substring(0, 16));
@@ -166,8 +165,8 @@ async function downloadZipWithDpop(url, authorization) {
 }
 
 async function startBatchDownload({ startDate, endDate, timezone, doSummary, doHistory }) {
-  const { authorization, capturedIv, baseUrl } = await chrome.storage.local.get([
-    "authorization", "capturedIv", "baseUrl"
+  const { authorization, baseUrl } = await chrome.storage.local.get([
+    "authorization", "baseUrl"
   ]);
   
   if (!authorization || !baseUrl) throw new Error("Missing Authorization token. Please open the Pokercraft tab.");
@@ -218,7 +217,7 @@ async function startBatchDownload({ startDate, endDate, timezone, doSummary, doH
   let games = [];
   
   try {
-     const searchRes = await fetchWithDpop(searchUrl, 'GET', null, authorization, capturedIv);
+     const searchRes = await fetchWithDpop(searchUrl, 'GET', null, authorization);
      chrome.runtime.sendMessage({ type: "BATCH_PROGRESS", payload: { message: `Search decrypted successfully!` } });
      if (Array.isArray(searchRes)) games = searchRes;
      else if (searchRes.data && Array.isArray(searchRes.data)) games = searchRes.data;
@@ -288,7 +287,7 @@ async function startBatchDownload({ startDate, endDate, timezone, doSummary, doH
          
          let genRes;
          try {
-            genRes = await fetchWithDpop(genUrl, 'POST', genBody, authorization, capturedIv);
+            genRes = await fetchWithDpop(genUrl, 'POST', genBody, authorization);
          } catch(e) {
              chrome.runtime.sendMessage({ type: "BATCH_PROGRESS", payload: { message: `Batch ${i+1} failed: ${e.message}` } });
              continue;
@@ -319,7 +318,7 @@ async function startBatchDownload({ startDate, endDate, timezone, doSummary, doH
              await delay(5000); // 5 seconds interval
              attempts++;
              try {
-                 const progRes = await fetchWithDpop(progressUrl, 'GET', null, authorization, capturedIv);
+                 const progRes = await fetchWithDpop(progressUrl, 'GET', null, authorization);
                  if (progRes.vm && progRes.vm.result === 'ready-to-download') {
                      isReady = true;
                      chrome.runtime.sendMessage({ type: "BATCH_PROGRESS", payload: { message: `[${type}] File ready! Starting download...` } });
